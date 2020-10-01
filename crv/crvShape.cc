@@ -542,6 +542,7 @@ public:
   virtual int getTargetDimension() {return md;}
   virtual bool shouldApply(ma::Entity* e)
   {
+    /*
     std::vector<int> ai = crv::getAllInvalidities(mesh, e);
     mesh->getDownward(e, 1, edges);
     int niv = ai.size();
@@ -551,13 +552,12 @@ public:
       simplex = e;
     }
     return (ne > 0);
-    /*
+    */
     int tag = crv::getTag(adapter,e);
     ne = markEdges(mesh,e,tag,edges);
 
     simplex = e;
     return (ne > 0);
-    */
   }
   virtual bool requestLocality(apf::CavityOp* o)
   {
@@ -1390,8 +1390,10 @@ int fixInvalidEdges(Adapt* a)
 
   if(a->mesh->getShape()->getOrder() == 2)
     count += repositionInvalidEdges(a);
-  else
-    count += optimizeInvalidEdges(a);
+  else {
+    if (a->mesh->getDimension() == 3)
+      count += optimizeInvalidEdges(a);
+  }
 
   count += collapseInvalidEdges(a);
   count += swapInvalidEdges(a);
