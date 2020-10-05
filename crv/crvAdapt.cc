@@ -223,6 +223,7 @@ void adapt(ma::Input* in)
     fixCrvElementShapes(a);
   }
 
+  allowSplitCollapseOutsideLayer(a);
 
   if (in->maximumIterations > 0) {
     fixInvalidElements(a);
