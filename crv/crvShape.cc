@@ -435,8 +435,8 @@ static int markEdges(ma::Mesh* m, ma::Entity* e, int tag,
         edges[1] = ed[tetVertEdges[index][1]];
         edges[2] = ed[tetVertEdges[index][2]];
       }
-      break;
     }
+    break;
     case 1:
     {
       // if we have a single invalid edge, operate on it
@@ -444,8 +444,9 @@ static int markEdges(ma::Mesh* m, ma::Entity* e, int tag,
       m->getDownward(e,1,ed);
       edges[0] = ed[index];
       n = 1;
-      break;
+      //break;
     }
+    break;
     case 2:
     {
       // if we have an invalid face, operate on its edges
@@ -456,14 +457,16 @@ static int markEdges(ma::Mesh* m, ma::Entity* e, int tag,
       edges[0] = ed[0];
       edges[1] = ed[1];
       edges[2] = ed[2];
-      break;
+      //break;
     }
+    break;
     case 3:
     {
       m->getDownward(e,1,edges);
       n = 6;
-      break;
+      //break;
     }
+    break;
     default:
       fail("invalid quality tag in markEdges\n");
       break;
@@ -568,7 +571,7 @@ public:
     for (int i = 0; i < ne; ++i){
       if (edgeSwap->run(edges[i])){
         ns++;
-       // crv::clearTag(adapter,simplex);
+        //crv::clearTag(adapter,simplex);
         ma::clearFlag(adapter,edges[i],ma::COLLAPSE | ma::BAD_QUALITY);
         break;
       }
