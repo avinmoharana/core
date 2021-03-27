@@ -28,6 +28,16 @@ mpi_test(bezierSubdivision 1 ./bezierSubdivision)
 mpi_test(bezierValidity 1 ./bezierValidity)
 mpi_test(ma_analytic 1 ./ma_test_analytic_model)
 
+if(ENABLE_ZOLTAN)
+mpi_test(print_pumipic_partion 1
+         ./print_pumipic_partition
+         ${MESHES}/cube/cube.dmg
+         ${MESHES}/cube/pumi11/cube.smb
+         4
+         pumipic_cube
+         )
+endif()
+
 mpi_test(align 1 ./align)
 mpi_test(eigen_test 1 ./eigen_test)
 mpi_test(integrate 1 ./integrate)
@@ -56,6 +66,10 @@ if(ENABLE_SIMMETRIX)
   mpi_test(modelInfo_smd 1
     ./modelInfo
     "${MESHES}/cube/cube.smd")
+  mpi_test(highorder_sizefield 1
+    ./highOrderSizeFields
+    "${MESHES}/cube/cube.smd"
+    "${MESHES}/cube/pumi11/cube.smb")
 endif(ENABLE_SIMMETRIX)
 
 if(ENABLE_SIMMETRIX)
@@ -130,6 +144,7 @@ if(ENABLE_SIMMETRIX AND PCU_COMPRESS AND SIM_PARASOLID
     "${MDIR}/mesh_.smb"
     WORKING_DIRECTORY ${MDIR})
 endif()
+
 
 if(ENABLE_ZOLTAN)
   mpi_test(pumi3d-1p 4
@@ -283,6 +298,12 @@ mpi_test(tet_serial 1
   "${MDIR}/pipe.${GXT}"
   "pipe.smb"
   "tet.smb")
+if(ENABLE_SIMMETRIX)
+  mpi_test(test_residual_error_estimate 1
+    ./residualErrorEstimation_test
+    "${MESHES}/electromagnetic/fichera.x_t"
+    "${MESHES}/electromagnetic/fichera_1k.smb")
+endif()
 if(PCU_COMPRESS)
   set(MESHFILE "bz2:pipe_2_.smb")
 else()
@@ -486,7 +507,7 @@ mpi_test(mixedNumbering 4
   out)
 set(MDIR ${MESHES}/square)
 mpi_test(hierarchic_2p_2D 1
-  ./hierarchic 
+  ./hierarchic
   "${MDIR}/square.dmg"
   "${MDIR}/square.smb"
   2)
@@ -501,6 +522,33 @@ mpi_test(hierarchic_2p_3D 1
   "${MDIR}/cube.dmg"
   "${MDIR}/cube.smb"
   2)
+set(MDIR ${MESHES}/cube/pumi24)
+mpi_test(nedelec 1
+  ./nedelecShapes
+  "${MDIR}/cube.dmg"
+  "${MDIR}/cube.smb")
+set(MDIR ${MESHES}/cube/pumi670)
+mpi_test(l2_shape_tet_serial 1
+  ./L2Shapes
+  "${MDIR}/../cube.dmg"
+  "${MDIR}/cube.smb")
+mpi_test(l2_shape_tet_parallel 4
+  ./L2Shapes
+  "${MDIR}/../cube.dmg"
+  "${MDIR}/4/cube.smb")
+mpi_test(h1_shape_serial 1
+  ./H1Shapes
+  "${MDIR}/../cube.dmg"
+  "${MDIR}/cube.smb")
+mpi_test(h1_shape_parallel 4
+  ./H1Shapes
+  "${MDIR}/../cube.dmg"
+  "${MDIR}/4/cube.smb")
+set(MDIR ${MESHES}/cube/pumi24)
+mpi_test(pumiLoadMesh-1p 1
+  ./pumiLoadMesh
+  ${MDIR}/cube.dmg
+  ${MDIR}/cube.smb)
 set(MDIR ${MESHES}/cube)
 mpi_test(test_verify 4
   ./test_verify
@@ -600,6 +648,10 @@ if(ENABLE_SIMMETRIX)
     set(MDIR ${MESHES}/curved)
     mpi_test(curvedSphere 1
       ./curvetest
+      "${MDIR}/sphere1.xmt_txt"
+      "${MDIR}/sphere1_4.smb")
+    mpi_test(highOrderSolutionTransfer 1
+      ./highOrderSolutionTransfer
       "${MDIR}/sphere1.xmt_txt"
       "${MDIR}/sphere1_4.smb")
     mpi_test(curvedKova 1

@@ -6,7 +6,7 @@ endif()
 # This is the top level CMake file for the SCOREC build
 cmake_minimum_required(VERSION 3.0)
 
-project(SCOREC VERSION 2.2.2 LANGUAGES CXX C)
+project(SCOREC VERSION 2.2.5 LANGUAGES CXX C)
 
 include(cmake/bob.cmake)
 include(cmake/xsdk.cmake)
@@ -45,6 +45,9 @@ message(STATUS "CMAKE_C_FLAGS = ${CMAKE_C_FLAGS}")
 
 option(IS_TESTING "Build for CTest" OFF)
 message(STATUS "IS_TESTING: ${IS_TESTING}")
+
+set(MESHES "${CMAKE_SOURCE_DIR}/pumi-meshes" CACHE STRING "Directory of test meshes")
+message(STATUS "MESHES: ${MESHES}")
 
 option(BUILD_EXES "Build executables" ON)
 message(STATUS "BUILD_EXES: ${BUILD_EXES}")
@@ -133,6 +136,7 @@ add_subdirectory(pumi)
 add_subdirectory(ma)
 add_subdirectory(crv)
 add_subdirectory(spr)
+add_subdirectory(ree)
 add_subdirectory(sam)
 add_subdirectory(phasta)
 add_subdirectory(stk)
