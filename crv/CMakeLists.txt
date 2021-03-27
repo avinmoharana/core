@@ -8,6 +8,7 @@ set(SOURCES
   crvBezierShapes.cc
   crvBlended.cc
   crvCurveMesh.cc
+  crvDBG.cc
   crvElevation.cc
   crvG1Points.cc
   crvMath.cc
