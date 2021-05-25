@@ -64,7 +64,6 @@ class LevelSetSurface : public Surface
 	}
 	xi = (xi_low + xi_high) * 0.5;
         f = apf::getScalar(el, xi);
-        printf("s is %f\n", xi[0]);
       }
       apf::destroyElement(el);
       apf::destroyMeshElement(me);
