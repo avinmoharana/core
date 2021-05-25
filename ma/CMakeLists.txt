@@ -10,6 +10,7 @@ set(SOURCES
   maAdapt.cc
   maMesh.cc
   maRefine.cc
+  maEmbedSurface.cc
   maLayerRefine.cc
   maLayerCoarsen.cc
   maTables.cc
