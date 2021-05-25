@@ -11,7 +11,7 @@
 
 #include "LBFGS.h"
 #include "crvObjectiveFunctions.h"
-
+#include <ma.h>
 
 namespace crv {
 
@@ -22,7 +22,8 @@ class CrvEntityOptim
     virtual ~CrvEntityOptim() {}
     virtual void setMaxIter(int n) = 0;
     virtual void setTol(double tolerance) = 0;
-    virtual bool run(int &invaliditySize) = 0;
+    virtual bool run() = 0;
+    /* virtual bool run(int &invaliditySize) = 0; */
   protected:
 };
 
@@ -30,7 +31,8 @@ class CrvInternalEdgeOptim : public CrvEntityOptim
 {
   public:
     CrvInternalEdgeOptim(
-    	crv::Adapt* a,
+    	ma::Adapt* a,
+    	/* crv::Adapt* a, */
     	apf::MeshEntity* e,
     	apf::MeshEntity* t,
     	int m) :
@@ -44,9 +46,11 @@ class CrvInternalEdgeOptim : public CrvEntityOptim
   public:
     void setMaxIter(int n);
     void setTol(double tolerance);
-    bool run(int &invaliditySize);
+    bool run();
+    /* bool run(int &invaliditySize); */
   public:
-    crv::Adapt* adapt;
+    ma::Adapt* adapt;
+    /* crv::Adapt* adapt; */
     apf::MeshEntity* edge;
     apf::MeshEntity* tet;
     int mode;
@@ -61,7 +65,8 @@ class CrvBoundaryEdgeOptim : public CrvEntityOptim
 {
   public:
     CrvBoundaryEdgeOptim(
-    	crv::Adapt* a,
+    	ma::Adapt* a,
+    	/* crv::Adapt* a, */
     	apf::MeshEntity* e,
     	apf::MeshEntity* t,
     	int m) :
@@ -76,9 +81,11 @@ class CrvBoundaryEdgeOptim : public CrvEntityOptim
   public:
     void setMaxIter(int n);
     void setTol(double tolerance);
-    bool run(int &invaliditySize);
+    bool run();
+    /* bool run(int &invaliditySize); */
   public:
-    crv::Adapt* adapt;
+    ma::Adapt* adapt;
+    /* crv::Adapt* adapt; */
     apf::MeshEntity* edge;
     apf::MeshEntity* tet;
     int mode;
@@ -93,7 +100,8 @@ class CrvFaceOptim : public CrvEntityOptim
 {
   public:
     CrvFaceOptim(
-    	crv::Adapt* a,
+    	ma::Adapt* a,
+    	/* crv::Adapt* a, */
     	apf::MeshEntity* f,
     	apf::MeshEntity* t,
     	int m) :
@@ -108,9 +116,11 @@ class CrvFaceOptim : public CrvEntityOptim
   public:
     void setMaxIter(int n);
     void setTol(double tolerance);
+    /* bool run(); */
     bool run(int &invaliditySize);
   public:
-    crv::Adapt* adapt;
+    ma::Adapt* adapt;
+    /* crv::Adapt* adapt; */
     apf::MeshEntity* face;
     apf::MeshEntity* tet;
     int mode;

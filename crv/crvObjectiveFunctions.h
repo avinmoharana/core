@@ -92,7 +92,8 @@ class InternalEdgeReshapeObjFunc : public ObjFunction
 {
   public:
     InternalEdgeReshapeObjFunc(
-	crv::Adapt* a,
+    	ma::Adapt* a,
+	/* crv::Adapt* a, */
 	apf::MeshEntity* e,
 	apf::MeshEntity* t,
 	double (*fPtr)(apf::Mesh2*, apf::MeshEntity*, ma::SizeField*)) :
@@ -139,7 +140,8 @@ class InternalEdgeReshapeObjFunc : public ObjFunction
     	const vector<apf::Vector3> &fa,
     	const vector<apf::Vector3> &te);
   protected:
-    crv::Adapt* adapt;
+    ma::Adapt* adapt;
+    /* crv::Adapt* adapt; */
     apf::MeshEntity* edge;
     apf::MeshEntity* tet;
     double (*f)(apf::Mesh2*, apf::MeshEntity*, ma::SizeField*);
@@ -157,7 +159,8 @@ class BoundaryEdgeReshapeObjFunc : public ObjFunction
 {
   public:
     BoundaryEdgeReshapeObjFunc(
-	crv::Adapt* a,
+    	ma::Adapt* a,
+	/* crv::Adapt* a, */
     	apf::MeshEntity* e,
     	apf::MeshEntity* t,
 	double (*fPtr)(apf::Mesh2*, apf::MeshEntity*, ma::SizeField*)) :
@@ -207,7 +210,8 @@ class BoundaryEdgeReshapeObjFunc : public ObjFunction
     	const vector<apf::Vector3> &te,
     	bool isInitialX);
   protected:
-    crv::Adapt* adapt;
+    ma::Adapt* adapt;
+    /* crv::Adapt* adapt; */
     apf::MeshEntity* edge;
     apf::MeshEntity* tet;
     double (*f)(apf::Mesh2*, apf::MeshEntity*, ma::SizeField*);
@@ -224,7 +228,8 @@ class FaceReshapeObjFunc : public ObjFunction
 {
   public:
     FaceReshapeObjFunc(
-	crv::Adapt* a,
+    	ma::Adapt* a,
+	/* crv::Adapt* a, */
 	apf::MeshEntity* f,
 	apf::MeshEntity* t,
 	double (*fPtr)(apf::Mesh2*, apf::MeshEntity*, ma::SizeField*)) :
@@ -259,7 +264,8 @@ class FaceReshapeObjFunc : public ObjFunction
     	const vector<apf::Vector3> &fa,
     	const vector<apf::Vector3> &te);
   protected:
-    crv::Adapt* adapt;
+    ma::Adapt* adapt;
+    /* crv::Adapt* adapt; */
     apf::MeshEntity* face;
     apf::MeshEntity* tet;
     double (*f)(apf::Mesh2*, apf::MeshEntity*, ma::SizeField*);

@@ -5,6 +5,8 @@
 #include <apfMesh2.h>
 #include <apfMDS.h>
 #include <apfNumbering.h>
+#include <ma.h>
+#include <maStats.h>
 
 namespace crv_dbg
 {
@@ -20,5 +22,13 @@ void visualizeIndividualCavityEntities(apf::Mesh2* m, apf::MeshEntity* ent,
 
 void visualizeTetFaces(apf::Mesh2* m, apf::MeshEntity* e,
     const char* prefix, int resolution = 8);
+
+void createCavityMesh(ma::Adapt* a,
+    ma::EntityArray& tets,
+    const char* prefix);
+
+void createCavityMesh(ma::Adapt* a,
+    ma::EntitySet& tets,
+    const char* prefix);
 }
 #endif
