@@ -119,12 +119,14 @@ Refine::Refine(Adapt* a)
   adapt = a;
   Mesh* m = a->mesh;
   numberTag = m->createIntTag("ma_refine_number",1);
+  intersectionTag = m->createDoubleTag("ma_edge_intersection",1);
 }
 
 Refine::~Refine()
 {
   Mesh* m = adapt->mesh;
   m->destroyTag(numberTag);
+  m->destroyTag(intersectionTag);
 }
 
 Entity* makeSplitVert(Refine* r, Entity* edge)
@@ -136,14 +138,19 @@ Entity* makeSplitVert(Refine* r, Entity* edge)
   SolutionTransfer* st = a->solutionTransfer;
 /* midpoint of [-1,1] */
   Vector xi(0,0,0);
+  double t = 0.5;
+  if (m->hasTag(edge, r->intersectionTag)) {
+    m->getDoubleTag(edge, r->intersectionTag, &xi[0]);
+    t = (1.+xi[0])/2.;
+  }
   apf::MeshElement* me = apf::createMeshElement(m,edge);
   Vector point;
   apf::mapLocalToGlobal(me,xi,point);
   Vector param(0,0,0); //prevents uninitialized values
   if (a->input->shouldTransferParametric)
-    transferParametricOnEdgeSplit(m,edge,0.5,param);
+    transferParametricOnEdgeSplit(m,edge,t,param);
   if (a->input->shouldTransferToClosestPoint)
-    transferToClosestPointOnEdgeSplit(m,edge,0.5,param);
+    transferToClosestPointOnEdgeSplit(m,edge,t,param);
   Entity* vert = buildVertex(a,c,point,param);
   st->onVertex(me,xi,vert);
   sf->interpolate(me,xi,vert);

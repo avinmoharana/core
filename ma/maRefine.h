@@ -24,6 +24,7 @@ class Refine
     ~Refine();
     Adapt* adapt;
     Tag* numberTag;
+    Tag* intersectionTag;
     EntityArray toSplit[4];
     apf::DynamicArray<EntityArray> newEntities[4];
     bool shouldCollect[4];
