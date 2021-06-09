@@ -65,8 +65,17 @@ class LevelSetSurface : public Surface
 	xi = (xi_low + xi_high) * 0.5;
         f = apf::getScalar(el, xi);
       }
+
       apf::destroyElement(el);
       apf::destroyMeshElement(me);
+
+      // The following check is to make sure not too many short edges are created.
+      // Using a hard-coded threshold value here is OK since we are comparing
+      // parametric coordinates.
+      // TODO: Can we do better?
+      if (std::abs(xi[0] - 1.) < 0.05 ||
+      	  std::abs(xi[0] + 1.) < 0.05)
+      	return 0;
       return 1;
     }
     virtual bool isIntersecting(Entity* e)
