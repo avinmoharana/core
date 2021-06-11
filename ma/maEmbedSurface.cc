@@ -24,7 +24,44 @@
 
 namespace ma {
 
-long markIntersectingEdgesToSplit(Adapt* a, Surface* s, Tag* ei)
+static void updateOnSurfaceTag(Mesh* m, Tag* t)
+{
+  Entity* e;
+  Iterator* it;
+
+  int onSurface = 1;
+
+  it = m->begin(1);
+  while ( (e = m->iterate(it)) ) {
+    Entity* dv[2];
+    m->getDownward(e, 0, dv);
+    if (m->hasTag(dv[0], t) && m->hasTag(dv[1], t))
+      m->setIntTag(e, t, &onSurface);
+  }
+  m->end(it);
+
+  it = m->begin(2);
+  while ( (e = m->iterate(it)) ) {
+    Entity* dv[3];
+    m->getDownward(e, 1, dv);
+    if (m->hasTag(dv[0], t) && m->hasTag(dv[1], t) && m->hasTag(dv[2], t))
+      m->setIntTag(e, t, &onSurface);
+  }
+  m->end(it);
+
+  it = m->begin(3);
+  while ( ( e = m->iterate(it)) ) {
+    Entity* dv[4];
+    m->getDownward(e, 2, dv);
+    if (m->hasTag(dv[0], t) && m->hasTag(dv[1], t) && m->hasTag(dv[2], t) &&
+          m->hasTag(dv[3], t))
+      printf("WARNING \n");
+      /* PCU_ALWAYS_ASSERT(0); */
+  }
+  m->end(it);
+}
+
+long markIntersectingEdgesToSplit(Adapt* a, Surface* s, Tag* ei, Tag* vc)
 {
   int dimension = 1;
   int trueFlag = SPLIT;
@@ -44,7 +81,7 @@ long markIntersectingEdgesToSplit(Adapt* a, Surface* s, Tag* ei)
     if (allFalseFlags & getFlags(a,e))
       continue;
     Vector xi;
-    int n = s->getEdgeIntersectionXi(e, xi);
+    int n = s->getEdgeIntersectionXi(e, xi, vc);
     if (n > 0)
     {   
       setFlag(a,e,trueFlag);
@@ -56,7 +93,30 @@ long markIntersectingEdgesToSplit(Adapt* a, Surface* s, Tag* ei)
       setFlag(a,e,setFalseFlag);
   }
   m->end(it);
+
+  /* updateOnSurfaceTag(m, vc); */
+
   return PCU_Add_Long(count);
+}
+
+static void transferOnSurfaceTag(Mesh* m)
+{
+  Tag* inTag = m->findTag("ma_on_embed_surface");
+  PCU_ALWAYS_ASSERT(inTag);
+
+  Tag* outTag = m->createIntTag("on_embed_surface", 1);
+
+  int onSurf = 1;
+  for (int d = 0; d < m->getDimension(); d++)
+  {
+    Entity* e;
+    Iterator* it = m->begin(d);
+    while ( (e = m->iterate(it)) ) {
+      if (m->hasTag(e, inTag))
+        m->setIntTag(e, outTag, &onSurf);
+    }
+    m->end(it);
+  }
 }
 
 void embedSurface(Input* in, apf::Field* phi)
@@ -66,7 +126,7 @@ void embedSurface(Input* in, apf::Field* phi)
   Adapt* a = new Adapt(in);
   Refine* r  = a->refine;
   Surface* s = new LevelSetSurface(a->mesh, phi, 1.e-12);
-  long count = markIntersectingEdgesToSplit(a, s, r->intersectionTag);
+  long count = markIntersectingEdgesToSplit(a, s, r->intersectionTag, r->onSurfaceTag);
   if ( ! count) {
     return;
   }
@@ -80,6 +140,8 @@ void embedSurface(Input* in, apf::Field* phi)
   processNewElements(r);
   destroySplitElements(r);
   forgetNewEntities(r);
+  updateOnSurfaceTag(a->mesh, r->onSurfaceTag);
+  transferOnSurfaceTag(a->mesh);
   delete s;
   delete a;
   delete in;
