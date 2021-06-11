@@ -119,6 +119,7 @@ Refine::Refine(Adapt* a)
   adapt = a;
   Mesh* m = a->mesh;
   numberTag = m->createIntTag("ma_refine_number",1);
+  onSurfaceTag = m->createIntTag("ma_on_embed_surface",1);
   intersectionTag = m->createDoubleTag("ma_edge_intersection",1);
 }
 
@@ -126,6 +127,7 @@ Refine::~Refine()
 {
   Mesh* m = adapt->mesh;
   m->destroyTag(numberTag);
+  m->destroyTag(onSurfaceTag);
   m->destroyTag(intersectionTag);
 }
 
@@ -139,9 +141,11 @@ Entity* makeSplitVert(Refine* r, Entity* edge)
 /* midpoint of [-1,1] */
   Vector xi(0,0,0);
   double t = 0.5;
+  int addTagToVert = 0;
   if (m->hasTag(edge, r->intersectionTag)) {
     m->getDoubleTag(edge, r->intersectionTag, &xi[0]);
     t = (1.+xi[0])/2.;
+    addTagToVert = 1;
   }
   apf::MeshElement* me = apf::createMeshElement(m,edge);
   Vector point;
@@ -155,6 +159,8 @@ Entity* makeSplitVert(Refine* r, Entity* edge)
   st->onVertex(me,xi,vert);
   sf->interpolate(me,xi,vert);
   apf::destroyMeshElement(me);
+  if (addTagToVert)
+    m->setIntTag(vert, r->onSurfaceTag, &addTagToVert);
   return vert;
 }
 
@@ -328,6 +334,7 @@ void splitElements(Refine* r)
   for (int d=1; d <= m->getDimension(); ++d)
   {
     bool shouldCollect = r->shouldCollect[d];
+    /* shouldCollect = true; */
     if (shouldCollect)
     {
       r->newEntities[d].setSize(r->toSplit[d].getSize());

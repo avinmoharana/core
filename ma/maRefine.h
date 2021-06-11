@@ -24,7 +24,8 @@ class Refine
     ~Refine();
     Adapt* adapt;
     Tag* numberTag;
-    Tag* intersectionTag;
+    Tag* onSurfaceTag; // used in maEmbedSurface
+    Tag* intersectionTag; // used in maEmbedSurface
     EntityArray toSplit[4];
     apf::DynamicArray<EntityArray> newEntities[4];
     bool shouldCollect[4];
