@@ -24,8 +24,8 @@ class Surface
 {
   public:
     virtual ~Surface() {};
-    virtual int getEdgeIntersectionXi(Entity* e, Vector& xi) = 0;
-    virtual bool isIntersecting(Entity* e) = 0;
+    virtual int getEdgeIntersectionXi(Entity* e, Vector& xi, Tag* t) = 0;
+    /* virtual bool isIntersecting(Entity* e) = 0; */
 };
 
 class LevelSetSurface : public Surface
@@ -36,7 +36,7 @@ class LevelSetSurface : public Surface
     {}
     ~LevelSetSurface()
     {}
-    virtual int getEdgeIntersectionXi(Entity* e, Vector& xi)
+    virtual int getEdgeIntersectionXi(Entity* e, Vector& xi, Tag* t)
     {
       apf::MeshElement* me = apf::createMeshElement(mesh, e);
       apf::Element* el = apf::createElement(phi, me);
@@ -73,40 +73,53 @@ class LevelSetSurface : public Surface
       // Using a hard-coded threshold value here is OK since we are comparing
       // parametric coordinates.
       // TODO: Can we do better?
-      if (std::abs(xi[0] - 1.) < 0.05 ||
-      	  std::abs(xi[0] + 1.) < 0.05)
-      	return 0;
+      // Updated Note: having this logic makes keeping track of entities on the
+      // surface much more difficult. So for now let's have this commented and try to
+      // removed short edges with collapse operations, instead
+      Entity* dv[2];
+      mesh->getDownward(e, 0, dv);
+      /* int onSruface = 1; */
+      /* if (std::abs(xi[0] - 1.) < 0.05) { */
+      /* 	if (t) */
+      /* 	  mesh->setIntTag(dv[1], t, &onSruface); */
+      /* 	return 0; */
+      /* } */
+      /* if (std::abs(xi[0] + 1.) < 0.05) { */
+      /* 	if (t) */
+	  /* mesh->setIntTag(dv[0], t, &onSruface); */
+      /* 	return 0; */
+      /* } */
       return 1;
     }
-    virtual bool isIntersecting(Entity* e)
-    {
-      Vector xi;
-      int type = mesh->getType(e);
-      if (type == apf::Mesh::VERTEX)
-      	return false;
-      else if (type == apf::Mesh::EDGE) {
-      	int n = getEdgeIntersectionXi(e, xi);
-      	return n > 0;
-      }
-      else if (type == apf::Mesh::TRIANGLE || 
-      	       type == apf::Mesh::TET) {
-      	Entity* ds[12];
-      	int nd = mesh->getDownward(e, 1, ds);
-      	for(int i = 0; i < nd; i++) {
-      	  int n = getEdgeIntersectionXi(ds[i], xi);
-      	  if (n > 0) return true;
-	}
-      }
-      else
-      	PCU_ALWAYS_ASSERT(0);
-      return false;
-    }
+    /* virtual bool isIntersecting(Entity* e) */
+    /* { */
+    /*   Vector xi; */
+    /*   int type = mesh->getType(e); */
+    /*   if (type == apf::Mesh::VERTEX) */
+    /*   	return false; */
+    /*   else if (type == apf::Mesh::EDGE) { */
+    /*   	int n = getEdgeIntersectionXi(e, xi, 0); */
+    /*   	return n > 0; */
+    /*   } */
+    /*   else if (type == apf::Mesh::TRIANGLE || */ 
+    /*   	       type == apf::Mesh::TET) { */
+    /*   	Entity* ds[12]; */
+    /*   	int nd = mesh->getDownward(e, 1, ds); */
+    /*   	for(int i = 0; i < nd; i++) { */
+    /*   	  int n = getEdgeIntersectionXi(ds[i], xi, 0); */
+    /*   	  if (n > 0) return true; */
+	/* } */
+    /*   } */
+    /*   else */
+    /*   	PCU_ALWAYS_ASSERT(0); */
+    /*   return false; */
+    /* } */
     apf::Field* phi;
     double tol;
     Mesh* mesh;
 };
 
-long markIntersectionEdgesToSplit(Adapt* a, Surface* s, Tag* ei);
+long markIntersectionEdgesToSplit(Adapt* a, Surface* s, Tag* ei, Tag* vc);
 
 }
 
