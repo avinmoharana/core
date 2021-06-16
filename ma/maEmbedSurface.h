@@ -25,6 +25,7 @@ class Surface
   public:
     virtual ~Surface() {};
     virtual int getEdgeIntersectionXi(Entity* e, Vector& xi, Tag* t) = 0;
+    virtual apf::Field* getField() = 0;
     /* virtual bool isIntersecting(Entity* e) = 0; */
 };
 
@@ -38,11 +39,28 @@ class LevelSetSurface : public Surface
     {}
     virtual int getEdgeIntersectionXi(Entity* e, Vector& xi, Tag* t)
     {
+      Entity* dv[2];
+      mesh->getDownward(e, 0, dv);
       apf::MeshElement* me = apf::createMeshElement(mesh, e);
       apf::Element* el = apf::createElement(phi, me);
 
       Vector xi_low(-1.,0.,0.);
       Vector xi_high(1.,0.,0.);
+
+      if (t) {
+	printf("checking if any of the verts has the on surface tag\n");
+	if (mesh->hasTag(dv[0], t)) {
+	  printf("updating lower xi\n");
+	  return 0;
+	}
+	if (mesh->hasTag(dv[1], t)) {
+	  printf("updating upper xi\n");
+	  return 0;
+	}
+      }
+
+
+
       xi = (xi_low + xi_high) * 0.5;
 
       double f_low, f_high, f;
@@ -76,8 +94,8 @@ class LevelSetSurface : public Surface
       // Updated Note: having this logic makes keeping track of entities on the
       // surface much more difficult. So for now let's have this commented and try to
       // removed short edges with collapse operations, instead
-      Entity* dv[2];
-      mesh->getDownward(e, 0, dv);
+      /* Entity* dv[2]; */
+      /* mesh->getDownward(e, 0, dv); */
       /* int onSruface = 1; */
       /* if (std::abs(xi[0] - 1.) < 0.05) { */
       /* 	if (t) */
@@ -90,6 +108,10 @@ class LevelSetSurface : public Surface
       /* 	return 0; */
       /* } */
       return 1;
+    }
+    virtual apf::Field* getField()
+    {
+      return phi;
     }
     /* virtual bool isIntersecting(Entity* e) */
     /* { */
