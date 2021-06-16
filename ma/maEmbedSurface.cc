@@ -288,32 +288,24 @@ long markIntersectingEdgesToSplit(Adapt* a, Surface* s, Tag* ei, Tag* vc)
   if (!allFalseFlags) allFalseFlags = setFalseFlag;
   Entity* e;
   long count = 0;
-  int count2 = 0;
   Mesh* m = a->mesh;
   Iterator* it = m->begin(dimension);
   while ((e = m->iterate(it)))
   {
-    count2++;
     PCU_ALWAYS_ASSERT( ! getFlag(a,e,trueFlag));
     /* this skip conditional is powerful: it affords us a
        3X speedup of the entire adaptation in some cases */
     if (allFalseFlags & getFlags(a,e))
       continue;
     Vector xi;
-    printf("count2 is %d\n", count2);
-    if (m->hasTag(e, vc))
-      printf("edge has the on surface tag\n");
-    else
-      printf("edge does not have the on surface tag\n");
     int n = s->getEdgeIntersectionXi(e, xi, vc);
-    printf("after count2 is %d\n", count2);
     if (n > 0)
-    {   
+    {
       setFlag(a,e,trueFlag);
       m->setDoubleTag(e, ei, &xi[0]);
       if (a->mesh->isOwned(e))
         ++count;
-    }   
+    }
     else
       setFlag(a,e,setFalseFlag);
   }

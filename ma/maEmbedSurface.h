@@ -47,24 +47,20 @@ class LevelSetSurface : public Surface
       Vector xi_low(-1.,0.,0.);
       Vector xi_high(1.,0.,0.);
 
-      if (t) {
-	printf("checking if any of the verts has the on surface tag\n");
-	if (mesh->hasTag(dv[0], t)) {
-	  printf("updating lower xi\n");
+      // Note: this function is called with t = 0 during vertex moves. Hence the
+      // reason for checking t.
+      // The purpose of this function is to avoid finding the edge intersection if
+      // one of the verts is already moved to the surface.
+      if (t)
+	if (mesh->hasTag(dv[0], t) || mesh->hasTag(dv[1], t))
 	  return 0;
-	}
-	if (mesh->hasTag(dv[1], t)) {
-	  printf("updating upper xi\n");
-	  return 0;
-	}
-      }
 
 
 
       xi = (xi_low + xi_high) * 0.5;
 
       double f_low, f_high, f;
-     
+
       f_low = apf::getScalar(el, xi_low);
       f_high = apf::getScalar(el, xi_high);
       f = apf::getScalar(el, xi);
