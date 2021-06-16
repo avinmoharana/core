@@ -23,10 +23,37 @@
 #include "maSnap.h"
 #include "maLayer.h"
 #include <apf.h>
+#include <apfMDS.h>
 #include <apfShape.h>
+#include <gmi.h>
 #include <pcu_util.h>
 
 namespace ma {
+
+static void makeEmbedSurfaceMesh(Mesh* m, Tag* t, const char* name)
+{
+  int dim = m->getDimension();
+  Mesh* out = apf::makeEmptyMdsMesh(gmi_load(".null"), dim-1, false);
+
+  Entity* f;
+  Iterator* it = m->begin(dim-1);
+  while ( (f = m->iterate(it)) ) {
+    if (!m->hasTag(f, t)) continue;
+    int type = m->getType(f);
+    Entity* dv[3];
+    m->getDownward(f, 0, dv);
+    Entity* newVerts[3];
+    for (int i = 0; i < 3; i++) {
+      Vector p;
+      m->getPoint(dv[i], 0, p);
+      Vector param(0,0,0);
+      newVerts[i] = out->createVertex(0, p, param);
+    }
+    apf::buildElement(out, 0, type, newVerts);
+  }
+  m->end(it);
+  apf::writeVtkFiles(name, out);
+}
 
 static void updateOnSurfaceTag(Mesh* m, Tag* t)
 {
@@ -108,7 +135,7 @@ long markVertsToMove(Adapt* a, Surface* s, Tag* t, double xi_min = 0.05)
 	  ++count;
       }
       apf::destroyMeshElement(me);
-    } 
+    }
   }
   m->end(it);
 
@@ -243,6 +270,7 @@ static void moveToSurface(Adapt* a, Surface* s, Tag* onSurfaceTag)
   Tag* moveToTag = m->createDoubleTag("embed_vertex_move", 3);
   long count = markVertsToMove(a, s, moveToTag, 0.1);
   if ( ! count) {
+    m->destroyTag(moveToTag);
     return;
   }
   PCU_ALWAYS_ASSERT(checkFlagConsistency(a,0,SPLIT));
@@ -316,6 +344,18 @@ long markIntersectingEdgesToSplit(Adapt* a, Surface* s, Tag* ei, Tag* vc)
   return PCU_Add_Long(count);
 }
 
+static double getEdgeLength(Mesh* m, Entity* e)
+{
+  Entity* dv[2];
+  m->getDownward(e, 0, dv);
+  Vector p0;
+  Vector p1;
+  m->getPoint(dv[0], 0, p0);
+  m->getPoint(dv[1], 0, p1);
+  return (p1-p0).getLength();
+}
+
+
 long markSurfaceEdgesToCollapse(Adapt* a, Tag* t, double l)
 {
   int dimension = 1;
@@ -337,14 +377,8 @@ long markSurfaceEdgesToCollapse(Adapt* a, Tag* t, double l)
       continue;
     if (!m->hasTag(e, t))
       continue;
-    Entity* dv[2];
-    m->getDownward(e, 0, dv);
-    Vector p0;
-    Vector p1;
-    m->getPoint(dv[0], 0, p0);
-    m->getPoint(dv[1], 0, p1);
 
-    double length = (p1 - p0).getLength();
+    double length = getEdgeLength(m, e);
 
     if (length < l) {
       setFlag(a,e,trueFlag);
@@ -412,7 +446,7 @@ static void refineOnSurface(Adapt* a, Surface* s, Refine* r)
 }
 
 
-static void coarsenOnSurface(Adapt* a, Tag* t, double length, int iter = 3)
+static void coarsenOnSurface(Adapt* a, Tag* t, double length, int iter = 5)
 {
   for (int i = 0; i < iter; i++) {
     double t0 = PCU_Time();
@@ -432,7 +466,37 @@ static void coarsenOnSurface(Adapt* a, Tag* t, double length, int iter = 3)
   }
 }
 
-void embedSurface(Input* in, apf::Field* phi)
+static void getEdgeLengthStatsOnSurface(Mesh* m, Tag* t, double& avgLength, double& minLength, double& maxLength)
+{
+  minLength = 1.e16;
+  maxLength = 1.e-16;
+  double sum = 0.;
+  int count = 0;
+
+  Entity* e;
+  Iterator* it = m->begin(1);
+
+  while ( (e = m->iterate(it)) ) {
+    if (!m->hasTag(e, t)) continue;
+    if (!m->isOwned(e)) continue;
+    double len = getEdgeLength(m, e);
+    sum += len;
+    if (len > maxLength)
+      maxLength = len;
+    if (len < minLength)
+      minLength = len;
+    count++;
+  }
+  m->end(it);
+
+  PCU_Add_Double(sum);
+  PCU_Add_Int(count);
+  PCU_Max_Double(maxLength);
+  PCU_Min_Double(minLength);
+  avgLength = sum/count;
+}
+
+void embedSurface(Input* in, apf::Field* phi, int id)
 {
   //// general setups
   bool shouldMove = true;
@@ -447,6 +511,9 @@ void embedSurface(Input* in, apf::Field* phi)
   //// moving close verts to the surface
   if (shouldMove) {
     moveToSurface(a, s, r->onSurfaceTag);
+    std::stringstream ss;
+    ss << "embed_surf_after_move" << id;
+    makeEmbedSurfaceMesh(a->mesh, r->onSurfaceTag, ss.str().c_str());
   }
   // for debugging
   /* Tag* t1 = transferOnSurfaceTag(a->mesh, "on_surface_after_moves"); */
@@ -454,17 +521,26 @@ void embedSurface(Input* in, apf::Field* phi)
   //// surface refinements
   if (shouldRefine) {
     refineOnSurface(a, s, r);
+    std::stringstream ss;
+    ss << "embed_surf_after_refine" << id;
+    makeEmbedSurfaceMesh(a->mesh, r->onSurfaceTag, ss.str().c_str());
   }
   // for debugging
   /* Tag* t2 = transferOnSurfaceTag(a->mesh, "on_surface_after_splits"); */
 
   //// surface collapses
   if (shouldCoarsen) {
-    double length = 0.4; // user specified
+    double avgLength, minLength, maxLength;
+    getEdgeLengthStatsOnSurface(a->mesh, r->onSurfaceTag, avgLength, minLength, maxLength);
+    printf("edge length stats avg/min/max  ==  %f/%f/%f\n", avgLength, minLength, maxLength);
+    double length = maxLength; // user specified
     double halfLength = length/2.;
-    /* in->shouldForceAdaptation = true; */
-    coarsenOnSurface(a, r->onSurfaceTag, 0.05*halfLength);
+    in->shouldForceAdaptation = true;
+    /* coarsenOnSurface(a, r->onSurfaceTag, 0.05*halfLength); */
     coarsenOnSurface(a, r->onSurfaceTag,     halfLength);
+    std::stringstream ss;
+    ss << "embed_surf_after_coarsen" << id;
+    makeEmbedSurfaceMesh(a->mesh, r->onSurfaceTag, ss.str().c_str());
   }
   printf("checkpoint hh 01\n");
   // for debugging
