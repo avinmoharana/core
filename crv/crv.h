@@ -122,6 +122,22 @@ ma::Input* configureShapeCorrection(
   note that this function will delete the Input object */
 void adapt(ma::Input* in);
 
+/**\ brief embeds a surface into a mesh using mesh adapt operations
+ \details this is to introduce a surface in the mesh in a conforming manner
+ nore that this function will delete the Input object. */
+void embedSurface(ma::Input* in, apf::Field* phi, int id);
+
+int tetContainingTheSurface(ma::Mesh* m, apf::Field* phi,
+    ma::Entity* face, apf::Adjacent tet, ma::Tag* t);
+apf::Vector3 findPointOnSurface(ma::Mesh* m, apf::Field* phi,
+    ma::Entity* tet, apf::Vector3 xit, ma::Tag* t, double tol);
+void curveEntitiesToSurface(ma::Mesh* m, apf::Field* phi, ma::Tag* t);
+
+
+
+
+
+
 /** \brief crv stats to get statistic information about the mesh
   \details statistic considered are (1)final/desired edge-lengths
   (2) linear quality (3) curved quality (minJ/maxJ)

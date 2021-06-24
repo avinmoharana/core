@@ -19,6 +19,14 @@ Copyright 2013 Scientific Computation Research Center,
 #include "maMap.h"
 
 namespace ma {
+
+int getBestElement(
+    apf::Mesh* mesh,
+    int n,
+    apf::Element** elems,
+    Affine* elemInvMaps,
+    Vector const& point,
+    Vector& bestXi);
 int getMinimumDimension(apf::FieldShape* s);
 void transfer(
     apf::Field* field,

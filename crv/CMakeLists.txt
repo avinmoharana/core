@@ -9,6 +9,7 @@ set(SOURCES
   crvBlended.cc
   crvCurveMesh.cc
   crvElevation.cc
+  crvEmbedSurface.cc
   crvG1Points.cc
   crvMath.cc
   crvReposition.cc

@@ -417,9 +417,6 @@ static Tag* transferOnSurfaceTag(Mesh* m, const char* name)
   return outTag;
 }
 
-
-
-
 static void refineOnSurface(Adapt* a, Surface* s, Refine* r)
 {
   double t0 = PCU_Time();
@@ -524,6 +521,7 @@ void embedSurface(Input* in, apf::Field* phi, int id)
     std::stringstream ss;
     ss << "embed_surf_after_refine" << id;
     makeEmbedSurfaceMesh(a->mesh, r->onSurfaceTag, ss.str().c_str());
+    apf::writeVtkFiles("embedAfterRefine", a->mesh);
   }
   // for debugging
   /* Tag* t2 = transferOnSurfaceTag(a->mesh, "on_surface_after_splits"); */
@@ -541,6 +539,7 @@ void embedSurface(Input* in, apf::Field* phi, int id)
     std::stringstream ss;
     ss << "embed_surf_after_coarsen" << id;
     makeEmbedSurfaceMesh(a->mesh, r->onSurfaceTag, ss.str().c_str());
+    apf::writeVtkFiles("embedAfterCoarsen", a->mesh);
   }
   printf("checkpoint hh 01\n");
   // for debugging
@@ -560,8 +559,8 @@ void embedSurface(Input* in, apf::Field* phi, int id)
   /* a->mesh->destroyTag(t3); */
   /* printf("checkpoint 04\n"); */
 
-  a->mesh->removeField(phi);
-  apf::destroyField(phi);
+  /* a->mesh->removeField(phi); */
+  /* apf::destroyField(phi); */
   printf("checkpoint hh 03\n");
 }
 

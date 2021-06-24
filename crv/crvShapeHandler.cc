@@ -20,6 +20,9 @@
 #include <math.h>
 #include <pcu_util.h>
 
+#include <iostream>
+#include <apfMatrix.h>
+
 namespace crv {
 
 static double measureLinearTriArea(ma::Mesh* m, ma::Entity* tri)
@@ -75,15 +78,19 @@ class BezierTransfer : public ma::SolutionTransfer
     ~BezierTransfer()
     {
     }
-    void getVertParams(int ptype, apf::MeshEntity** parentVerts,
+    void getVertParams(ma::Entity* parent, apf::MeshEntity** parentVerts,
         apf::NewArray<apf::MeshEntity*>& midEdgeVerts, apf::MeshEntity* e,
         apf::Vector3 params[4])
     {
+      int ptype = mesh->getType(parent);
       int npv = apf::Mesh::adjacentCount[ptype][0];
       int ne = apf::Mesh::adjacentCount[ptype][1];
       apf::Downward verts;
 
       int nv = mesh->getDownward(e,0,verts);
+      apf::Downward edges;
+      int nep = mesh->getDownward(parent,1,edges);
+
       // first check verts
       for (int v = 0; v < nv; ++v){
         bool vert = false;
@@ -96,10 +103,17 @@ class BezierTransfer : public ma::SolutionTransfer
         }
 
         if(!vert){
-          for (int i = 0; i < ne; ++i){
+          for (int i = 0; i < nep; ++i){
             if( verts[v] == midEdgeVerts[i] ){
-              params[v] = elem_edge_xi[ptype][i];
-              break;
+	      params[v] = elem_edge_xi[ptype][i];
+
+	      /* if ( ma::getFlag(adapt,edges[i],ma::SPLIT) ) { */
+	      if (mesh->hasTag(edges[i], refine->intersectionTag)) {
+		apf::Vector3 xi(0,0,0);
+		mesh->getDoubleTag(edges[i], refine->intersectionTag, &xi[0]);
+		params[v] = apf::boundaryToElementXi(mesh, edges[i], parent, xi);
+	      }
+	      break;
             }
           }
         }
@@ -120,9 +134,9 @@ class BezierTransfer : public ma::SolutionTransfer
       apf::Downward parentVerts,parentEdges;
 
       mesh->getDownward(parent,0,parentVerts);
-      mesh->getDownward(parent,1,parentEdges);
+      int ne = mesh->getDownward(parent,1,parentEdges);
 
-      int ne = apf::Mesh::adjacentCount[parentType][1];
+      /* int ne = apf::Mesh::adjacentCount[parentType][1]; */
 
       // check if we can use the curvature of the original element or not
       // uses BAD_QUALITY on edges to indicate this
@@ -188,7 +202,7 @@ class BezierTransfer : public ma::SolutionTransfer
           } else {
             int n = getNumControlPoints(childType,P);
             apf::Vector3 vp[4];
-            getVertParams(parentType,parentVerts,midEdgeVerts,newEntities[i],vp);
+            getVertParams(parent,parentVerts,midEdgeVerts,newEntities[i],vp);
             if(getBlendingOrder(childType) > 0){
               apf::NewArray<apf::Vector3> childXi(n);
               collectNodeXi(parentType,childType,P,vp,childXi);
@@ -232,6 +246,74 @@ class BezierTransfer : public ma::SolutionTransfer
       }
 
       apf::destroyElement(elem);
+
+      /* { */
+      /* 	int pt = mesh->getType(parent); */
+      /* 	printf(" parent type %d \n", pt); */
+      /* 	printf(" child entities %d \n", newEntities.getSize()); */
+	/* int ne,nf,nt,ncv,nc; */
+	/* ne = nf = nt = ncv = nc = 0; */
+      /* 	for ( int i = 0; i <newEntities.getSize(); i++) { */
+      /* 	  int ct = mesh->getType(newEntities[i]); */
+      /* 	  /1* if (pt == 4) { *1/ */
+      /* 	    /1* printf(" child type %d\n", ct); *1/ */
+      /* 	    if ( ct == 1) ne++; */
+	    /* else if (ct == 2) nf++; */
+	    /* else if (ct == 0) ncv++; */
+	    /* else nt++; */
+	  /* /1* } *1/ */
+
+      /* 	  if ( ct == 1) { */
+	    /* apf::MeshElement* me = apf::createMeshElement(mesh, newEntities[i]); */
+	    /* apf::Vector3 xi(0,0,0); */
+	    /* apf::Vector3 p; */
+	    /* apf::mapLocalToGlobal(me, xi, p); */
+	    /* apf::Vector3 pv[2]; */
+	    /* apf::MeshEntity* v[2]; */
+	    /* int nv = mesh->getDownward(newEntities[i], 0, v); */
+	    /* for ( int j = 0; j < nv; j++) */
+	      /* mesh->getPoint(v[j], 0, pv[j]); */
+	    /* std::cout<< " child "<<pv[0]<<" "<<pv[1]<<std::endl; */
+	    /* apf::Vector3 mid = (pv[0]+pv[1])*0.5; */
+	    /* if ( (mid-p)*(mid-p) > 10e-8 ) { */
+	      /* nc++; */
+	      /* std::cout<<" curved edges "<<mid-p<<std::endl; */
+	    /* } */
+	  /* } */
+	  /* if ( pt == 2) { */
+	    /* apf::MeshEntity* v[3]; */
+	    /* int nv = mesh->getDownward(parent, 0, v); */
+	    /* apf::Vector3 pv[3]; */
+	    /* for ( int j = 0; j < nv; j++) */
+	      /* mesh->getPoint(v[j], 0, pv[j]); */
+	    /* std::cout<< " parent "<<pv[0]<<" " */
+	      /* <<pv[1]<<" "<<pv[2]<<std::endl; */
+	  /* } */
+
+	  /* if ( pt == 1 && ct == 0 ) { */
+	    /* if ( ma::getFlag(adapt,parentEdges[i],ma::SPLIT) ) { */
+	      /* apf::Vector3 xi(0,0,0); */
+	      /* mesh->getDoubleTag(parent, refine->intersectionTag, &xi[0]); */
+	      /* std::cout<<" xi from tag "<<xi<<std::endl; */
+	      /* apf::MeshElement* me = apf::createMeshElement(mesh, parent); */
+	      /* apf::Vector3 p, p1; */
+	      /* apf::mapLocalToGlobal(me, xi, p1); */
+	      /* mesh->getPoint(newEntities[i], 0, p); */
+	      /* std::cout<<" from intersection "<<p1<<std::endl; */
+	      /* std::cout<<" vertex "<<p<<std::endl; */
+	    /* } */
+
+
+	  /* } */
+
+
+	/* } */
+	/* std::cout<<"nv = "<<ncv<< */
+	  /* " ne = "<<ne<< */
+	  /* " nf = "<<nf<< */
+	  /* " nt = "<<nt<< */
+	  /* " edges "<<nc<<std::endl; */ 
+      /* } */
 
     }
   private:
