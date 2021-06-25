@@ -52,7 +52,7 @@ void adapt(Input* in);
 /** \brief embeds a surface into a mesh using mesh adapt operations
   \details this is to introduce a surface in the mesh in a conforming manner
   note that this function will delete the Input object. */
-void embedSurface(Input* in, apf::Field* phi, int id);
+Tag* embedSurface(Input* in, apf::Field* phi, int id);
 /** \brief adapt verbose for debugging
   \details see maInput.h for details. The mesh will be
   written (vtk-format) at each operation stage */

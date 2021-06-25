@@ -493,7 +493,7 @@ static void getEdgeLengthStatsOnSurface(Mesh* m, Tag* t, double& avgLength, doub
   avgLength = sum/count;
 }
 
-void embedSurface(Input* in, apf::Field* phi, int id)
+Tag* embedSurface(Input* in, apf::Field* phi, int id)
 {
   //// general setups
   bool shouldMove = true;
@@ -547,6 +547,7 @@ void embedSurface(Input* in, apf::Field* phi, int id)
   /* printf("checkpoint 02\n"); */
 
   //// cleanups
+  Tag* t3 = transferOnSurfaceTag(a->mesh, "onSurfaceCopy");
   delete s;
   delete a;
   delete in;
@@ -562,6 +563,7 @@ void embedSurface(Input* in, apf::Field* phi, int id)
   /* a->mesh->removeField(phi); */
   /* apf::destroyField(phi); */
   printf("checkpoint hh 03\n");
+  return t3;
 }
 
 }
