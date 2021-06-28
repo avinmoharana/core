@@ -164,8 +164,10 @@ ma::Input* configureShapeCorrection(
 static int fixInvalidElements(crv::Adapt* a)
 {
   a->input->shouldForceAdaptation = true;
-  int count = crv::fixLargeBoundaryAngles(a)
-            + crv::fixInvalidEdges(a);
+
+  int count = crv::fixLargeBoundaryAngles(a);
+    /* + crv::fixInvalidFaces(a) */
+    /* + crv::fixInvalidEdges(a); */
   int originalCount = count;
   int prev_count;
   int i = 0;
@@ -173,13 +175,15 @@ static int fixInvalidElements(crv::Adapt* a)
     if ( ! count)
       break;
     prev_count = count;
-    count = crv::fixLargeBoundaryAngles(a)
-          + crv::fixInvalidEdges(a);
+    count = crv::fixLargeBoundaryAngles(a);
+      /* + crv::fixInvalidFaces(a) */
+      /* + crv::fixInvalidEdges(a); */
     ++i;
   } while(count < prev_count);
 
   crv::fixLargeBoundaryAngles(a);
   ma::clearFlagFromDimension(a,ma::COLLAPSE | ma::BAD_QUALITY,1);
+  ma::clearFlagFromDimension(a, ma::SNAP, 2);
   a->input->shouldForceAdaptation = false;
   return originalCount - count;
 }

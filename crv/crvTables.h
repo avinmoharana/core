@@ -50,7 +50,6 @@ static bool const flip_tet_tri_edges[4][3] =
     \details ordered as XJ Luo's thesis */
 static int const tetVertEdges[4][3] = {{3,0,2},{0,4,1},{1,5,2},{3,5,4}};
 
-
 /** \brief edge indices connected to a vertex of a tri, this does not
     comment on their orientation wrt to the vertex
     \details [refer to the comment for tets] */

@@ -103,7 +103,7 @@ static void testInterpolating(const char* modelFile, const char* meshFile,
 }
 
 static void testBezier(const char* modelFile, const char* meshFile,
-    const int ne, const int nf)
+    int ne, int nf)
 {
 
   apf::DynamicMatrix edgeErrors(ne,6);
@@ -115,6 +115,8 @@ static void testBezier(const char* modelFile, const char* meshFile,
     crv::BezierCurver bc(m2,order,2);
     bc.run();
     testElementSize(m2);
+    ne = m2->count(1);
+    nf = m2->count(2);
     apf::DynamicVector ee(ne);
     apf::DynamicVector fe(nf);
     testInterpolationError(m2,1,ee);

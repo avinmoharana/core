@@ -13,12 +13,14 @@
 #include "crvQuality.h"
 #include "crvShape.h"
 #include "crvTables.h"
+#include "crvDBG.h"
 #include <maShapeHandler.h>
 #include <maSolutionTransfer.h>
 #include <maShape.h>
 #include <mth_def.h>
 #include <math.h>
 #include <pcu_util.h>
+#include "crvOptimizations.h"
 
 #include <iostream>
 #include <apfMatrix.h>
@@ -678,7 +680,38 @@ class BezierHandler : public ma::ShapeHandler
           }
         }
       }
+      std::stringstream ss; 
+      ss<< "quadBlending";
+      crv_dbg::createCavityMesh(adapt, newEntities, ss.str().c_str());
+      ss.str("");
+
+      // reshape edge
+      /* crv::Adapt* crvAdapt = new Adapt(adapt->input); */
+      for (size_t i = 0; i < newEntities.getSize(); i++) {
+      	if (mesh->getType(newEntities[i]) != apf::Mesh::EDGE) continue;
+	apf::Adjacent adjR;
+	mesh->getAdjacent(newEntities[i], 3, adjR);
+
+	CrvEntityOptim* ceo;
+      	if (mesh->getModelType(mesh->toModel(newEntities[i])) == 3)
+	  ceo = new crv::CrvInternalEdgeOptim(adapt, newEntities[i], adjR[0], NIJK);
+	else
+	  ceo = new crv::CrvBoundaryEdgeOptim(adapt, newEntities[i], adjR[0], NIJK);
+
+	ceo->setMaxIter(100);
+	ceo->setTol(1e-8);
+	if (ceo->run())
+	  printf("Successfully reshaped edge after collapse\n");
+	else
+	  printf("Edge reshape failed\n");
+      }
+
+      /* std::stringstream ss; */ 
+      ss<< "reshapedEdge";
+      crv_dbg::createCavityMesh(adapt, newEntities, ss.str().c_str());
+      ss.str("");
     }
+
   private:
     ma::Adapt* adapt;
     ma::Mesh* mesh;
