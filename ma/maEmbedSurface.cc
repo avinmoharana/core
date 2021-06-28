@@ -550,7 +550,7 @@ Tag* embedSurface(Input* in, apf::Field* phi, int id)
   Tag* t3 = transferOnSurfaceTag(a->mesh, "onSurfaceCopy");
   delete s;
   delete a;
-  delete in;
+  /* delete in; */
   printf("checkpoint hh 02\n");
 
   /* a->mesh->destroyTag(t1); */

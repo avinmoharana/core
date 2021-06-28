@@ -641,6 +641,30 @@ class BezierHandler : public ma::ShapeHandler
         }
       }
 
+      /// Commented to force straight sided edge
+      /* ma::EntityArray middleEdges(numMiddleEdges); */
+      /* int me = 0; */
+      /* for (size_t i = 0; i < newEntities.getSize(); ++i){ */
+      /*   // if we aren't an edge or we are on a boundary, don't do this */
+      /*   if(mesh->getType(newEntities[i]) != apf::Mesh::EDGE) continue; */
+      /*   if(isBoundaryEntity(mesh,newEntities[i])) continue; */
+      /*   // special case in 2D */
+      /*   if(numNewTriangles == 2 && mesh->getDimension() == 2) */
+      /*     setBlendedQuadEdgePointsShared(newEntities[i]); */
+
+      /*   else if(!setBlendedQuadEdgePointsCross(oldTriangles,newEntities[i])){ */
+      /*     middleEdges[me] = newEntities[i]; */
+      /*     me++; */
+      /*     // set to linear, because we don't know any better */
+      /*     setLinearEdgePoints(mesh,newEntities[i]); */
+      /*   } */
+      /* } */
+
+      // set the middle edges
+      /* for (int i = 0; i < me; ++i) */
+      /*   setBlendedQuadEdgePointsShared(middleEdges[i]); */
+      /// Comment ends
+
       ma::EntityArray middleEdges(numMiddleEdges);
       int me = 0;
       for (size_t i = 0; i < newEntities.getSize(); ++i){
@@ -651,17 +675,13 @@ class BezierHandler : public ma::ShapeHandler
         if(numNewTriangles == 2 && mesh->getDimension() == 2)
           setBlendedQuadEdgePointsShared(newEntities[i]);
 
-        else if(!setBlendedQuadEdgePointsCross(oldTriangles,newEntities[i])){
+        else {
           middleEdges[me] = newEntities[i];
           me++;
           // set to linear, because we don't know any better
           setLinearEdgePoints(mesh,newEntities[i]);
         }
       }
-
-      // set the middle edges
-      for (int i = 0; i < me; ++i)
-        setBlendedQuadEdgePointsShared(middleEdges[i]);
 
       // set the rest of the interior points
       for (int d = 2; d <= mesh->getDimension(); ++d){
@@ -680,36 +700,37 @@ class BezierHandler : public ma::ShapeHandler
           }
         }
       }
-      std::stringstream ss; 
-      ss<< "quadBlending";
-      crv_dbg::createCavityMesh(adapt, newEntities, ss.str().c_str());
-      ss.str("");
+      /* std::stringstream ss; */ 
+      /* ss<< "quadBlending"; */
+      /* crv_dbg::createCavityMesh(adapt, newEntities, ss.str().c_str()); */
+      /* ss.str(""); */
 
       // reshape edge
       /* crv::Adapt* crvAdapt = new Adapt(adapt->input); */
-      for (size_t i = 0; i < newEntities.getSize(); i++) {
-      	if (mesh->getType(newEntities[i]) != apf::Mesh::EDGE) continue;
-	apf::Adjacent adjR;
-	mesh->getAdjacent(newEntities[i], 3, adjR);
 
-	CrvEntityOptim* ceo;
-      	if (mesh->getModelType(mesh->toModel(newEntities[i])) == 3)
-	  ceo = new crv::CrvInternalEdgeOptim(adapt, newEntities[i], adjR[0], NIJK);
-	else
-	  ceo = new crv::CrvBoundaryEdgeOptim(adapt, newEntities[i], adjR[0], NIJK);
+      /* for (size_t i = 0; i < newEntities.getSize(); i++) { */
+      /* 	if (mesh->getType(newEntities[i]) != apf::Mesh::EDGE) continue; */
+	/* apf::Adjacent adjR; */
+	/* mesh->getAdjacent(newEntities[i], 3, adjR); */
 
-	ceo->setMaxIter(100);
-	ceo->setTol(1e-8);
-	if (ceo->run())
-	  printf("Successfully reshaped edge after collapse\n");
-	else
-	  printf("Edge reshape failed\n");
-      }
+	/* CrvEntityOptim* ceo; */
+      /* 	if (mesh->getModelType(mesh->toModel(newEntities[i])) == 3) */
+	  /* ceo = new crv::CrvInternalEdgeOptim(adapt, newEntities[i], adjR[0], NIJK); */
+	/* else */
+	  /* ceo = new crv::CrvBoundaryEdgeOptim(adapt, newEntities[i], adjR[0], NIJK); */
 
-      /* std::stringstream ss; */ 
-      ss<< "reshapedEdge";
-      crv_dbg::createCavityMesh(adapt, newEntities, ss.str().c_str());
-      ss.str("");
+	/* ceo->setMaxIter(100); */
+	/* ceo->setTol(1e-8); */
+	/* if (ceo->run()) */
+	  /* printf("Successfully reshaped edge after collapse\n"); */
+	/* else */
+	  /* printf("Edge reshape failed\n"); */
+      /* } */
+
+      /* /1* std::stringstream ss; *1/ */ 
+      /* ss<< "reshapedEdge"; */
+      /* crv_dbg::createCavityMesh(adapt, newEntities, ss.str().c_str()); */
+      /* ss.str(""); */
     }
 
   private:
