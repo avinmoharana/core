@@ -639,6 +639,30 @@ class BezierHandler : public ma::ShapeHandler
         }
       }
 
+      // Commented code to force straight sided edges
+
+      /* ma::EntityArray middleEdges(numMiddleEdges); */
+      /* int me = 0; */
+      /* for (size_t i = 0; i < newEntities.getSize(); ++i){ */
+      /*   // if we aren't an edge or we are on a boundary, don't do this */
+      /*   if(mesh->getType(newEntities[i]) != apf::Mesh::EDGE) continue; */
+      /*   if(isBoundaryEntity(mesh,newEntities[i])) continue; */
+      /*   // special case in 2D */
+      /*   if(numNewTriangles == 2 && mesh->getDimension() == 2) */
+      /*     setBlendedQuadEdgePointsShared(newEntities[i]); */
+
+      /*   else if(!setBlendedQuadEdgePointsCross(oldTriangles,newEntities[i])){ */
+      /*     middleEdges[me] = newEntities[i]; */
+      /*     me++; */
+      /*     // set to linear, because we don't know any better */
+      /*     setLinearEdgePoints(mesh,newEntities[i]); */
+      /*   } */
+      /* } */
+
+      /* // set the middle edges */
+      /* for (int i = 0; i < me; ++i) */
+      /*   setBlendedQuadEdgePointsShared(middleEdges[i]); */
+      // Comment ends
       ma::EntityArray middleEdges(numMiddleEdges);
       int me = 0;
       for (size_t i = 0; i < newEntities.getSize(); ++i){
@@ -649,17 +673,13 @@ class BezierHandler : public ma::ShapeHandler
         if(numNewTriangles == 2 && mesh->getDimension() == 2)
           setBlendedQuadEdgePointsShared(newEntities[i]);
 
-        else if(!setBlendedQuadEdgePointsCross(oldTriangles,newEntities[i])){
+        else {
           middleEdges[me] = newEntities[i];
           me++;
           // set to linear, because we don't know any better
           setLinearEdgePoints(mesh,newEntities[i]);
         }
       }
-
-      // set the middle edges
-      for (int i = 0; i < me; ++i)
-        setBlendedQuadEdgePointsShared(middleEdges[i]);
 
       // set the rest of the interior points
       for (int d = 2; d <= mesh->getDimension(); ++d){
